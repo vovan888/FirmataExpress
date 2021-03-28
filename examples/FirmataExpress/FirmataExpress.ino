@@ -402,6 +402,10 @@ void setPinModeCallback(byte pin, int mode)
           // Disable PWM if pin mode was previously set to PWM.
           digitalWrite(PIN_TO_DIGITAL(pin), LOW);
         }
+
+        // set OUTPUTs to HIGH by default (for relays)
+        digitalWrite(PIN_TO_DIGITAL(pin), HIGH);
+
         pinMode(PIN_TO_DIGITAL(pin), OUTPUT);
         Firmata.setPinMode(pin, OUTPUT);
       }
@@ -506,6 +510,7 @@ void digitalWriteCallback(byte port, int value)
           pinValue = ((byte)value & mask) ? 1 : 0;
           if (Firmata.getPinMode(pin) == OUTPUT) {
             pinWriteMask |= mask;
+#if 0
           } else if (Firmata.getPinMode(pin) == INPUT && pinValue == 1 && Firmata.getPinState(pin) != 1) {
             // only handle INPUT here for backwards compatibility
 #if ARDUINO > 100
@@ -513,6 +518,7 @@ void digitalWriteCallback(byte port, int value)
 #else
             // only write to the INPUT pin to enable pullups if Arduino v1.0.0 or earlier
             pinWriteMask |= mask;
+#endif
 #endif
           }
           Firmata.setPinState(pin, pinValue);
@@ -1021,13 +1027,13 @@ void systemResetCallback()
       setPinModeCallback(i, PIN_MODE_ANALOG);
     }
 #if defined(__AVR__)
-    else if ( IS_PIN_TONE(i)) {
-      noTone(i) ;
-    }
+//    else if ( IS_PIN_TONE(i)) {
+//      noTone(i) ;
+//    }
 #endif
     else {
       // sets the output to 0, configures portConfigInputs
-      setPinModeCallback(i, OUTPUT);
+      setPinModeCallback(i, INPUT_PULLUP);
     }
 
     servoPinMap[i] = 255;
